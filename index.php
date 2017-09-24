@@ -94,44 +94,50 @@ $location = "recipes.json";
 $recipes = new Recipes(readJSON($location));
 //echo $recipes->getRecipes();
 
-$today = date('d/m/Y');
-
-foreach($recipes->getRecipes() as $recipe)
+function getRecipe($fridge, $recipes)
 {
-    $name = $recipe["name"];
-    $ingredients = $recipe["ingredients"];
-    $count=0;
-    $hasFood=[];
-    foreach($ingredients as $ingredient)
+    $today = date('d/m/Y');
+    foreach($recipes->getRecipes() as $recipe)
     {
-        $hasFood[$count] = false;
-        $item = $ingredient["item"];
-        $amount = (int)$ingredient["amount"];
-        // check food is enough
-        foreach($fridge->getFood() as $food)
+        $name = $recipe["name"];
+        $ingredients = $recipe["ingredients"];
+        $count=0;
+        $hasFood=[];
+        foreach($ingredients as $ingredient)
         {
-            if(($item == trim($food[0])) && ($amount <= $food[1]) && ($today < $food[3]))
+            $hasFood[$count] = false;
+            $item = $ingredient["item"];
+            $amount = (int)$ingredient["amount"];
+            // check food is enough
+            foreach($fridge->getFood() as $food)
             {
-                // has $ingredient
-                $hasFood[$count] = true;
-                break;
+                if(($item == trim($food[0])) && ($amount <= $food[1]) && ($today < $food[3]))
+                {
+                    // has $ingredient
+                    $hasFood[$count] = true;
+                    break;
+                }
             }
+            $count +=1;
         }
-        $count +=1;
-    }
-    $count = 0;
-    if(in_array(false, $hasFood))
-    {
-        echo 'you dont have enough food';
-    }
-    else
-    {
-        echo 'u can make '.$name;
-        break;
-        //return $name;   // return recipe
-    }
+        $count = 0;
+        if(in_array(false, $hasFood))
+        {
+            return "Order Takeout";
+        }
+        else
+        {
+            return $name;   // return recipe
+            break;
 
+        }
+
+    }
 }
+
+echo getRecipe($fridge, $recipes);
+
+
 
 
 ?>
