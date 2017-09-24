@@ -57,6 +57,45 @@ function putJSON($location, $json)
 {
     file_put_contents($location, json_encode($json));
 }
+function getRecipe($fridge, $recipes)
+{
+    $today = date('d/m/Y');
+    foreach($recipes->getRecipes() as $recipe)
+    {
+        $name = $recipe["name"];
+        $ingredients = $recipe["ingredients"];
+        $count=0;
+        $hasFood=[];
+        foreach($ingredients as $ingredient)
+        {
+            $hasFood[$count] = false;
+            $item = $ingredient["item"];
+            $amount = (int)$ingredient["amount"];
+            // check food is enough
+            foreach($fridge->getFood() as $food)
+            {
+                if(($item == trim($food[0])) && ($amount <= $food[1]) && ($today < $food[3]))
+                {
+                    // has $ingredient
+                    $hasFood[$count] = true;
+                    break;
+                }
+            }
+            $count +=1;
+        }
+        if(in_array(false, $hasFood))
+        {
+            return "Order Takeout";
+        }
+        else
+        {
+            return $name;   // return recipe
+            break;
+
+        }
+
+    }
+}
 class Fridge
 {
     public $food;
@@ -92,50 +131,10 @@ $fridge = new Fridge(readCSV($location));
 
 $location = "recipes.json";
 $recipes = new Recipes(readJSON($location));
-//echo $recipes->getRecipes();
 
-function getRecipe($fridge, $recipes)
-{
-    $today = date('d/m/Y');
-    foreach($recipes->getRecipes() as $recipe)
-    {
-        $name = $recipe["name"];
-        $ingredients = $recipe["ingredients"];
-        $count=0;
-        $hasFood=[];
-        foreach($ingredients as $ingredient)
-        {
-            $hasFood[$count] = false;
-            $item = $ingredient["item"];
-            $amount = (int)$ingredient["amount"];
-            // check food is enough
-            foreach($fridge->getFood() as $food)
-            {
-                if(($item == trim($food[0])) && ($amount <= $food[1]) && ($today < $food[3]))
-                {
-                    // has $ingredient
-                    $hasFood[$count] = true;
-                    break;
-                }
-            }
-            $count +=1;
-        }
-        $count = 0;
-        if(in_array(false, $hasFood))
-        {
-            return "Order Takeout";
-        }
-        else
-        {
-            return $name;   // return recipe
-            break;
+$recommendation = getRecipe($fridge, $recipes);
 
-        }
-
-    }
-}
-
-echo getRecipe($fridge, $recipes);
+echo 'The recommendation of recipe tonight is '. $recommendation;
 
 
 
